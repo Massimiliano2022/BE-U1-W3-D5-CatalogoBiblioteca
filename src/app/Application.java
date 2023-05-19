@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory;
 
 import dao.ElementoCatalogoDAO;
 import dao.LibroDAO;
+import dao.PrestitoDAO;
 import dao.RivistaDAO;
+import dao.UtenteDAO;
 import entities.ElementoCatalogo;
-import entities.Genere;
 import entities.Libro;
-import entities.Periodicita;
-import entities.Rivista;
+import entities.Utente;
 
 public class Application {
 
@@ -29,25 +29,80 @@ public class Application {
 		ElementoCatalogoDAO elementoD = new ElementoCatalogoDAO(em);
 		LibroDAO libroD = new LibroDAO(em);
 		RivistaDAO rivistaD = new RivistaDAO(em);
+		UtenteDAO utenteD = new UtenteDAO(em);
+		PrestitoDAO prestitoD = new PrestitoDAO(em);
 
-		Libro libro1 = new Libro("Il nome della rosa", 1980, 536, "Umberto Eco", Genere.ROMANZO);
+		// Libro libro1 = new Libro("Il nome della rosa", 1980, 536, "Umberto Eco",
+		// Genere.ROMANZO);
 
-		libroD.save(libro1);
+		// libroD.save(libro1);
 
-		Rivista rivista1 = new Rivista("National Geographic", 2021, 120, Periodicita.MENSILE);
+		// Rivista rivista1 = new Rivista("National Geographic", 2021, 120,
+		// Periodicita.MENSILE);
 
-		rivistaD.save(rivista1);
+		// rivistaD.save(rivista1);
 
-		// libroD.findByIdAndDelete(libro1.getId());
-		// rivistaD.findByIdAndDelete(rivista1.getId());
+		/*
+		 * libroD.findByIdAndDelete(libro1.getId());
+		 * rivistaD.findByIdAndDelete(rivista1.getId());
+		 */
 
-		libroD.findById(libro1.getId());
-		rivistaD.findById(rivista1.getId());
+		// libroD.findById(libro1.getId());
+		// rivistaD.findById(rivista1.getId());
 
 		ricercaElementoCatalogoPerAnno(elementoD, 2021);
 		ricercaLibroPerAutore(libroD, "Umberto Eco");
 		ricercaElementoPerTitolo(elementoD, "rosa");
 
+		// Utente utente1 = new Utente("Mario", "Rossi",
+		// LocalDate.now().minusYears(29));
+
+		// utenteD.save(utente1);
+
+		// Prestito prestito1 = new Prestito(utente1, libro1, LocalDate.now(),
+		// LocalDate.now().plusWeeks(6));
+		// Prestito prestito2 = new Prestito(utente1, rivista1, LocalDate.now(),
+		// LocalDate.now().plusWeeks(6));
+
+		// List<Prestito> listaPrestitiU1 = new ArrayList<>();
+		// listaPrestitiU1.add(prestito1);
+		// listaPrestitiU1.add(prestito2);
+
+		// utente1.setListaPrestiti(listaPrestitiU1);
+
+		// List<Prestito> listaPrestitiLibro1 = new ArrayList<>();
+		// listaPrestitiLibro1.add(prestito1);
+
+		// libro1.setListaPrestiti(listaPrestitiLibro1);
+
+		// prestitoD.save(prestito1);
+		// prestitoD.save(prestito2);
+
+		Utente utente1 = utenteD.getById(3L);
+
+		List<ElementoCatalogo> elementiInPrestito = elementoD
+				.getElementiPrestitoByNumeroTessera(utente1.getNumeroTessera());
+		if (!elementiInPrestito.isEmpty()) {
+			logger.info("ELEMENTI IN PRESTITO DALL'UTENTE " + utente1.toString());
+			for (ElementoCatalogo elemento : elementiInPrestito) {
+				logger.info(elemento.toString());
+			}
+		} else {
+			logger.info("L'utente non ha nessun elemento in prestito!");
+		}
+
+		List<ElementoCatalogo> elementiNonRestituiti = elementoD.getElementiPrestitiScaduti();
+		if (!elementiNonRestituiti.isEmpty()) {
+			logger.info("ELEMENTI IN PRESTITO E NON RESTITUITI SONO:");
+			for (ElementoCatalogo elemento : elementiNonRestituiti) {
+				logger.info(elemento.toString());
+			}
+		} else {
+			logger.info("Nessun ELEMENTO NON RESTITUITO!");
+		}
+
+		em.close();
+		emf.close();
 	}
 
 	private static void ricercaElementoCatalogoPerAnno(ElementoCatalogoDAO elementoD, int annoSearched) {

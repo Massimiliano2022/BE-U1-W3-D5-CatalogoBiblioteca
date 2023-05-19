@@ -1,5 +1,8 @@
 package entities;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -7,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -15,6 +20,9 @@ import javax.persistence.Table;
 @Table(name = "elementi_catalogo")
 @NamedQuery(name = "searchByAnnoPubblicazione", query = "select e from ElementoCatalogo e where e.annoPubblicazione = :annoPubblicazione")
 @NamedQuery(name = "searchByTitolo", query = "SELECT e FROM ElementoCatalogo e WHERE e.titolo LIKE CONCAT('%', :titolo, '%')")
+
+@NamedQuery(name = "searchPrestitiByNumeroTessera", query = "SELECT p.elemento FROM Prestito p WHERE p.utente.numeroTessera = :numeroTessera")
+@NamedQuery(name = "searchPrestitiScaduti", query = "SELECT p.elemento FROM Prestito p WHERE p.dataRestituzioneEffettiva > dataRestituzione")
 public abstract class ElementoCatalogo {
 
 	@Id
@@ -24,6 +32,10 @@ public abstract class ElementoCatalogo {
 	private String titolo;
 	private int annoPubblicazione;
 	private int numeroPagine;
+
+	@OneToMany(mappedBy = "elemento", cascade = CascadeType.REMOVE)
+	@OrderBy(value = "titolo")
+	private List<Prestito> listaPrestiti;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -55,6 +67,14 @@ public abstract class ElementoCatalogo {
 
 	public int getNumeroPagine() {
 		return numeroPagine;
+	}
+
+	public void setListaPrestiti(List<Prestito> listaPrestiti) {
+		this.listaPrestiti = listaPrestiti;
+	}
+
+	public List<Prestito> getListaPrestiti() {
+		return listaPrestiti;
 	}
 
 	public ElementoCatalogo() {

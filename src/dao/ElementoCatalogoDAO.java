@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -59,4 +60,15 @@ public class ElementoCatalogoDAO {
 		return query.getResultList();
 	}
 
+	public List<ElementoCatalogo> getElementiPrestitoByNumeroTessera(UUID numeroTessera) {
+		TypedQuery<ElementoCatalogo> query = em.createNamedQuery("searchPrestitiByNumeroTessera",
+				ElementoCatalogo.class);
+		query.setParameter("numeroTessera", numeroTessera);
+		return query.getResultList();
+	}
+
+	public List<ElementoCatalogo> getElementiPrestitiScaduti() {
+		TypedQuery<ElementoCatalogo> query = em.createNamedQuery("searchPrestitiScaduti", ElementoCatalogo.class);
+		return query.getResultList();
+	}
 }
