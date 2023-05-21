@@ -1,5 +1,6 @@
 package dao;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import app.Application;
 import entities.ElementoCatalogo;
+import entities.Prestito;
 
 public class ElementoCatalogoDAO {
 
@@ -36,15 +38,27 @@ public class ElementoCatalogoDAO {
 	}
 
 	public void findByIdAndDelete(Long id) {
-		ElementoCatalogo found = em.find(ElementoCatalogo.class, id);
-		if (found != null) {
-			EntityTransaction transaction = em.getTransaction();
+		EntityTransaction transaction = em.getTransaction();
+		try {
 			transaction.begin();
-			em.remove(found);
-			transaction.commit();
-			logger.info("Elemento con id " + id + " eliminato!");
-		} else {
-			logger.info("Elemento non TROVATO!");
+			ElementoCatalogo found = em.find(ElementoCatalogo.class, id);
+			if (found != null) {
+				List<Prestito> listaPrestiti = found.getListaPrestiti();
+				for (Prestito prestito : listaPrestiti) {
+					em.remove(prestito);
+				}
+				em.remove(found);
+				transaction.commit();
+				logger.info("Elemento con id " + id + " eliminato!");
+			} else {
+				logger.info("Elemento con id " + id + " non trovato!");
+			}
+		} catch (Exception e) {
+			if (transaction != null && transaction.isActive()) {
+				transaction.rollback();
+			}
+		} finally {
+			em.close();
 		}
 	}
 
@@ -69,6 +83,7 @@ public class ElementoCatalogoDAO {
 
 	public List<ElementoCatalogo> getElementiPrestitiScaduti() {
 		TypedQuery<ElementoCatalogo> query = em.createNamedQuery("searchPrestitiScaduti", ElementoCatalogo.class);
+		query.setParameter("oggi", LocalDate.now());
 		return query.getResultList();
 	}
 }

@@ -1,5 +1,7 @@
 package app;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -14,7 +16,11 @@ import dao.PrestitoDAO;
 import dao.RivistaDAO;
 import dao.UtenteDAO;
 import entities.ElementoCatalogo;
+import entities.Genere;
 import entities.Libro;
+import entities.Periodicita;
+import entities.Prestito;
+import entities.Rivista;
 import entities.Utente;
 
 public class Application {
@@ -32,74 +38,50 @@ public class Application {
 		UtenteDAO utenteD = new UtenteDAO(em);
 		PrestitoDAO prestitoD = new PrestitoDAO(em);
 
-		// Libro libro1 = new Libro("Il nome della rosa", 1980, 536, "Umberto Eco",
-		// Genere.ROMANZO);
+		Libro libro1 = new Libro("Il nome della rosa", 1980, 536, "Umberto Eco", Genere.ROMANZO);
 
-		// libroD.save(libro1);
+		libroD.save(libro1);
 
-		// Rivista rivista1 = new Rivista("National Geographic", 2021, 120,
-		// Periodicita.MENSILE);
+		Rivista rivista1 = new Rivista("National Geographic", 2021, 120, Periodicita.MENSILE);
 
-		// rivistaD.save(rivista1);
+		rivistaD.save(rivista1);
 
-		/*
-		 * libroD.findByIdAndDelete(libro1.getId());
-		 * rivistaD.findByIdAndDelete(rivista1.getId());
-		 */
-
-		// libroD.findById(libro1.getId());
-		// rivistaD.findById(rivista1.getId());
+		libroD.findById(libro1.getId());
+		rivistaD.findById(rivista1.getId());
 
 		ricercaElementoCatalogoPerAnno(elementoD, 2021);
 		ricercaLibroPerAutore(libroD, "Umberto Eco");
-		ricercaElementoPerTitolo(elementoD, "rosa");
+		ricercaElementoPerTitolo(elementoD, "national");
 
-		// Utente utente1 = new Utente("Mario", "Rossi",
-		// LocalDate.now().minusYears(29));
+		Utente utente1 = new Utente("Mario", "Rossi", LocalDate.now().minusYears(29));
 
-		// utenteD.save(utente1);
+		utenteD.save(utente1);
 
-		// Prestito prestito1 = new Prestito(utente1, libro1, LocalDate.now(),
-		// LocalDate.now().plusWeeks(6));
-		// Prestito prestito2 = new Prestito(utente1, rivista1, LocalDate.now(),
-		// LocalDate.now().plusWeeks(6));
+		Prestito prestito1 = new Prestito(utente1, libro1, LocalDate.now().minusDays(45));
+		Prestito prestito2 = new Prestito(utente1, rivista1, LocalDate.now().minusDays(60));
 
-		// List<Prestito> listaPrestitiU1 = new ArrayList<>();
-		// listaPrestitiU1.add(prestito1);
-		// listaPrestitiU1.add(prestito2);
+		prestitoD.save(prestito1);
+		prestitoD.save(prestito2);
 
-		// utente1.setListaPrestiti(listaPrestitiU1);
+		List<Prestito> listaPrestitiUtente1 = new ArrayList<>();
+		listaPrestitiUtente1.add(prestito1);
+		listaPrestitiUtente1.add(prestito2);
+		utente1.setListaPrestiti(listaPrestitiUtente1);
 
-		// List<Prestito> listaPrestitiLibro1 = new ArrayList<>();
-		// listaPrestitiLibro1.add(prestito1);
+		List<Prestito> listaPrestitiLibro1 = new ArrayList<>();
+		listaPrestitiLibro1.add(prestito1);
+		libro1.setListaPrestiti(listaPrestitiLibro1);
 
-		// libro1.setListaPrestiti(listaPrestitiLibro1);
+		List<Prestito> listaPrestitiRivista1 = new ArrayList<>();
+		listaPrestitiRivista1.add(prestito2);
+		rivista1.setListaPrestiti(listaPrestitiRivista1);
 
-		// prestitoD.save(prestito1);
-		// prestitoD.save(prestito2);
+		elementiInPrestitoPerUtente(elementoD, utente1);
+		tuttiGliElementiNonRestituiti(elementoD);
 
-		Utente utente1 = utenteD.getById(3L);
-
-		List<ElementoCatalogo> elementiInPrestito = elementoD
-				.getElementiPrestitoByNumeroTessera(utente1.getNumeroTessera());
-		if (!elementiInPrestito.isEmpty()) {
-			logger.info("ELEMENTI IN PRESTITO DALL'UTENTE " + utente1.toString());
-			for (ElementoCatalogo elemento : elementiInPrestito) {
-				logger.info(elemento.toString());
-			}
-		} else {
-			logger.info("L'utente non ha nessun elemento in prestito!");
-		}
-
-		List<ElementoCatalogo> elementiNonRestituiti = elementoD.getElementiPrestitiScaduti();
-		if (!elementiNonRestituiti.isEmpty()) {
-			logger.info("ELEMENTI IN PRESTITO E NON RESTITUITI SONO:");
-			for (ElementoCatalogo elemento : elementiNonRestituiti) {
-				logger.info(elemento.toString());
-			}
-		} else {
-			logger.info("Nessun ELEMENTO NON RESTITUITO!");
-		}
+		// utenteD.findByIdAndDelete(utente1.getId());
+		// elementoD.findByIdAndDelete(libro1.getId());
+		// elementoD.findByIdAndDelete(rivista1.getId());
 
 		em.close();
 		emf.close();
@@ -138,6 +120,31 @@ public class Application {
 			}
 		} else {
 			logger.info("Nessun ELEMENTO TROVATO per il titolo cercato!");
+		}
+	}
+
+	private static void elementiInPrestitoPerUtente(ElementoCatalogoDAO elementoD, Utente utente1) {
+		List<ElementoCatalogo> elementiInPrestito = elementoD
+				.getElementiPrestitoByNumeroTessera(utente1.getNumeroTessera());
+		if (!elementiInPrestito.isEmpty()) {
+			logger.info("ELEMENTI IN PRESTITO DALL'UTENTE " + utente1.toString());
+			for (ElementoCatalogo elemento : elementiInPrestito) {
+				logger.info(elemento.toString());
+			}
+		} else {
+			logger.info("L'utente non ha nessun elemento in prestito!");
+		}
+	}
+
+	private static void tuttiGliElementiNonRestituiti(ElementoCatalogoDAO elementoD) {
+		List<ElementoCatalogo> elementiNonRestituiti = elementoD.getElementiPrestitiScaduti();
+		if (!elementiNonRestituiti.isEmpty()) {
+			logger.info("ELEMENTI IN PRESTITO E NON RESTITUITI SONO:");
+			for (ElementoCatalogo elemento : elementiNonRestituiti) {
+				logger.info(elemento.toString());
+			}
+		} else {
+			logger.info("Nessun ELEMENTO NON RESTITUITO!");
 		}
 	}
 

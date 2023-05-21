@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
@@ -16,6 +17,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "utenti")
+
+@NamedQuery(name = "deleteUtente", query = "DELETE FROM Utente u WHERE u.id = :id")
 public class Utente {
 
 	@Id
@@ -27,7 +30,7 @@ public class Utente {
 	private LocalDate dataNascita;
 	private UUID numeroTessera;
 
-	@OneToMany(mappedBy = "utente", cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "utente", cascade = CascadeType.ALL)
 	@OrderBy(value = "evento.dataEvento")
 	private List<Prestito> listaPrestiti;
 

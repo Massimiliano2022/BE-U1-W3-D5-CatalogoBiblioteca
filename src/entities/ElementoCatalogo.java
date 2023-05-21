@@ -19,10 +19,11 @@ import javax.persistence.Table;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "elementi_catalogo")
 @NamedQuery(name = "searchByAnnoPubblicazione", query = "select e from ElementoCatalogo e where e.annoPubblicazione = :annoPubblicazione")
-@NamedQuery(name = "searchByTitolo", query = "SELECT e FROM ElementoCatalogo e WHERE e.titolo LIKE CONCAT('%', :titolo, '%')")
+@NamedQuery(name = "searchByTitolo", query = "SELECT e FROM ElementoCatalogo e WHERE LOWER(e.titolo) LIKE CONCAT('%', LOWER(:titolo), '%')")
 
-@NamedQuery(name = "searchPrestitiByNumeroTessera", query = "SELECT p.elemento FROM Prestito p WHERE p.utente.numeroTessera = :numeroTessera")
-@NamedQuery(name = "searchPrestitiScaduti", query = "SELECT p.elemento FROM Prestito p WHERE p.dataRestituzioneEffettiva > dataRestituzione")
+@NamedQuery(name = "searchPrestitiByNumeroTessera", query = "SELECT p.elemento FROM Prestito p WHERE p.utente.numeroTessera = :numeroTessera AND p.dataRestituzioneEffettiva IS NULL")
+@NamedQuery(name = "searchPrestitiScaduti", query = "SELECT p.elemento FROM Prestito p WHERE p.dataRestituzione < :oggi AND p.dataRestituzioneEffettiva IS NULL")
+
 public abstract class ElementoCatalogo {
 
 	@Id
@@ -33,7 +34,7 @@ public abstract class ElementoCatalogo {
 	private int annoPubblicazione;
 	private int numeroPagine;
 
-	@OneToMany(mappedBy = "elemento", cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "elemento", cascade = CascadeType.ALL)
 	@OrderBy(value = "titolo")
 	private List<Prestito> listaPrestiti;
 

@@ -1,5 +1,7 @@
 package dao;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
@@ -7,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import app.Application;
+import entities.Prestito;
 import entities.Utente;
 
 public class UtenteDAO {
@@ -32,16 +35,28 @@ public class UtenteDAO {
 	}
 
 	public void findByIdAndDelete(Long id) {
-		Utente found = em.find(Utente.class, id);
-		if (found != null) {
-			EntityTransaction transaction = em.getTransaction();
+		EntityTransaction transaction = em.getTransaction();
+		try {
 			transaction.begin();
-			em.remove(found);
-			transaction.commit();
-			logger.info("Utente con id " + id + " eliminato!");
-		} else {
-			logger.info("Utente non TROVATO!");
+			Utente found = em.find(Utente.class, id);
+			if (found != null) {
+				List<Prestito> listaPrestiti = found.getListaPrestiti();
+				for (Prestito prestito : listaPrestiti) {
+					em.remove(prestito);
+				}
+				em.remove(found);
+				transaction.commit();
+				logger.info("Utente con id " + id + " eliminato!");
+			} else {
+				logger.info("Utente con id " + id + " non trovato!");
+			}
+		} catch (Exception e) {
+			if (transaction != null && transaction.isActive()) {
+				transaction.rollback();
+			}
+		} finally {
+			em.close();
 		}
-	}
 
+	}
 }

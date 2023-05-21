@@ -6,9 +6,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cascade;
 
 @Entity
 @Table(name = "prestiti")
@@ -20,15 +23,13 @@ public class Prestito {
 	private Long id;
 
 	@ManyToOne
-	// @JoinColumn(name = "utente_id", referencedColumnName = "id", nullable =
-	// false)
-	// @Cascade(org.hibernate.annotations.CascadeType.ALL)
+	@JoinColumn(name = "utente_id", referencedColumnName = "id", nullable = false)
+	@Cascade(org.hibernate.annotations.CascadeType.ALL)
 	private Utente utente;
 
 	@ManyToOne
-	// @JoinColumn(name = "utente_id", referencedColumnName = "id", nullable =
-	// false)
-	// @Cascade(org.hibernate.annotations.CascadeType.ALL)
+	@JoinColumn(name = "elemento_id", referencedColumnName = "id", nullable = false)
+	@Cascade(org.hibernate.annotations.CascadeType.ALL)
 	private ElementoCatalogo elemento;
 
 	private LocalDate dataInizioPrestito;
@@ -87,13 +88,11 @@ public class Prestito {
 
 	}
 
-	public Prestito(Utente utente, ElementoCatalogo elemento, LocalDate dataInizioPrestito,
-			LocalDate dataRestituzioneEffettiva) {
+	public Prestito(Utente utente, ElementoCatalogo elemento, LocalDate dataInizioPrestito) {
 		setUtente(utente);
 		setElemento(elemento);
 		setDataInizioPrestito(dataInizioPrestito);
 		setDataRestituzione(dataInizioPrestito.plusDays(30));
-		setDataRestituzioneEffettiva(dataRestituzioneEffettiva);
 	}
 
 	@Override
